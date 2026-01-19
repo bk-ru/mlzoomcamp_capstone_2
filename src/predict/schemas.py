@@ -1,4 +1,4 @@
-"""Pydantic schemas for the service."""
+"""Pydantic schemas for prediction requests and responses."""
 
 from __future__ import annotations
 

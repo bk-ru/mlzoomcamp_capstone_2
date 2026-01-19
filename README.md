@@ -2,6 +2,10 @@
 
 Predict whether a NYC employee will receive overtime pay (`total_ot_paid > 0`) using the Citywide Payroll dataset. This repo includes training scripts, a FastAPI service, tests, Docker setup, and Cloud Run deployment instructions.
 
+## Problem description
+
+This project predicts whether a NYC employee will receive overtime pay in a given fiscal year. The target is binary: `target_ot = (total_ot_paid > 0)`. The task is imbalanced, so model selection emphasizes F1 and PR-AUC, and the decision threshold is tuned rather than fixed at 0.5. Inputs are a mix of categorical attributes (agency, title, borough, leave status, pay basis) and numeric values (fiscal_year, base_salary).
+
 ## Project structure
 
 - `src/` training and inference code
@@ -9,6 +13,7 @@ Predict whether a NYC employee will receive overtime pay (`total_ot_paid > 0`) u
 - `tests/` API tests
 - `models/` saved model artifacts
 - `notebooks/` EDA and experimentation
+- `screenshots/` EDA and evaluation figures
 - `data/` raw and processed data folders
 
 ## Data
@@ -34,9 +39,12 @@ If no CSVs are present in `data/raw/`, the script falls back to Socrata automati
 ## Reproducibility
 
 ```bash
-make setup
-make train
-make serve
+python -m venv .venv
+# Windows: .\.venv\Scripts\Activate.ps1
+# macOS/Linux: source .venv/bin/activate
+pip install -r requirements.txt
+python -m src.train
+uvicorn service.app:app --host 0.0.0.0 --port 8000
 ```
 
 ### Training details
@@ -92,7 +100,7 @@ The confusion matrix highlights the FP/FN trade-off at threshold 0.5. We select 
 
 On the test set, the model separates classes well (ROC-AUC ~0.98) and achieves strong PR-AUC (AP ~0.92), which is especially important under class imbalance.
 
-<img src="screenshots/ROC Curve + Precision-Recall.png" alt="ROC and Precision-Recall Curves" width="900">
+<img src="screenshots/ROC Curve + Precision–Recall.png" alt="ROC and Precision-Recall Curves" width="900">
 
 ### Threshold Tuning (Test)
 
@@ -126,7 +134,7 @@ python -m src.predict --input sample.json
 Start the service:
 
 ```bash
-make serve
+uvicorn service.app:app --host 0.0.0.0 --port 8000
 ```
 
 Example request:
@@ -155,14 +163,14 @@ If the model artifacts are missing, `/predict` returns HTTP 503 with a clear err
 ## Tests
 
 ```bash
-make test
+pytest -q
 ```
 
 ## Docker
 
 ```bash
-make docker-build
-make docker-run
+docker build -t nyc-ot .
+docker run -p 8000:8000 nyc-ot
 ```
 
 Then call:

@@ -15,6 +15,8 @@ from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_sc
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 
+from src.predict.schemas import PredictionRequest
+
 FEATURE_COLS = [
     "fiscal_year",
     "agency_name",
@@ -121,15 +123,15 @@ def test_health() -> None:
 
 
 def test_predict() -> None:
-    payload = {
-        "fiscal_year": 2024,
-        "agency_name": "Police",
-        "title_description": "Officer",
-        "work_location_borough": "Queens",
-        "leave_status_as_of_june_30": "Active",
-        "pay_basis": "per annum",
-        "base_salary": 85000,
-    }
+    payload = PredictionRequest(
+        fiscal_year=2024,
+        agency_name="Police",
+        title_description="Officer",
+        work_location_borough="Queens",
+        leave_status_as_of_june_30="Active",
+        pay_basis="per annum",
+        base_salary=85000,
+    ).model_dump()
     with TestClient(app) as client:
         response = client.post("/predict", json=payload)
         assert response.status_code == 200

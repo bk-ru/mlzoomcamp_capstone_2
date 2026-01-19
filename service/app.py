@@ -2,37 +2,17 @@
 
 from __future__ import annotations
 
-import json
-from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
-import joblib
-import pandas as pd
 from fastapi import FastAPI, HTTPException
 
-from .schemas import HealthResponse, PredictionRequest, PredictionResponse
-
-
-APP_ROOT = Path(__file__).resolve().parents[1]
-MODEL_PATH = APP_ROOT / "models" / "best_model.joblib"
-META_PATH = APP_ROOT / "models" / "best_model_meta.json"
+from src.predict.predictor import load_artifacts, predict_with_model
+from src.predict.schemas import HealthResponse, PredictionRequest, PredictionResponse
 
 app = FastAPI(title="NYC Overtime Prediction Service")
 app.state.model = None
 app.state.meta = None
 app.state.model_error = None
-
-
-def load_artifacts() -> tuple[Any, Dict[str, Any]]:
-    """Load model and metadata from disk."""
-    if not MODEL_PATH.exists() or not META_PATH.exists():
-        raise FileNotFoundError(
-            "Model artifacts not found. Train the model or add files to models/."
-        )
-    model = joblib.load(MODEL_PATH)
-    meta = json.loads(META_PATH.read_text())
-    return model, meta
-
 
 @app.on_event("startup")
 def startup_event() -> None:
@@ -58,12 +38,6 @@ def get_model() -> tuple[Any, Dict[str, Any]]:
     return model, meta
 
 
-def build_dataframe(payload: PredictionRequest, feature_cols: list[str]) -> pd.DataFrame:
-    """Build a dataframe aligned to the model feature columns."""
-    row = {col: getattr(payload, col, None) for col in feature_cols}
-    return pd.DataFrame([row], columns=feature_cols)
-
-
 @app.get("/health", response_model=HealthResponse)
 def health() -> HealthResponse:
     """Health check endpoint."""
@@ -74,18 +48,10 @@ def health() -> HealthResponse:
 def predict(payload: PredictionRequest) -> PredictionResponse:
     """Predict overtime probability for a single record."""
     model, meta = get_model()
-    feature_cols = meta.get("feature_cols")
-    if not feature_cols:
-        raise HTTPException(status_code=500, detail="Model metadata is missing")
+    try:
+        outputs = predict_with_model([payload.model_dump()], model, meta)
+    except ValueError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
-    df = build_dataframe(payload, feature_cols)
-    prob = float(model.predict_proba(df)[:, 1][0])
-    threshold = float(meta.get("threshold", 0.5))
-    model_name = str(meta.get("best_model_name", "model"))
-
-    return PredictionResponse(
-        prob_ot=prob,
-        pred_ot=int(prob >= threshold),
-        threshold=threshold,
-        model=model_name,
-    )
+    output = outputs[0]
+    return PredictionResponse(**output)

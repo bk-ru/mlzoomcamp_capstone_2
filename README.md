@@ -1,5 +1,7 @@
 # NYC Overtime Prediction (ML Zoomcamp Capstone)
 
+![Loan Approval ML Illustration](screenshots/logo.png)
+
 Predict whether a NYC employee will receive overtime pay (`total_ot_paid > 0`) using the Citywide Payroll dataset. This repo includes training scripts, a FastAPI service, tests, Docker setup, and Cloud Run deployment instructions.
 
 ## Problem description

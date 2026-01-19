@@ -1,0 +1,11 @@
+.venv
+__pycache__
+*.pyc
+.pytest_cache
+.git
+notebooks
+screenshots
+data/raw
+data/processed
+*.ipynb
+Citywide_Payroll_Data__Fiscal_Year_.csv

@@ -1,0 +1,30 @@
+[project]
+name = "nyc-overtime-prediction"
+version = "0.1.0"
+description = "NYC overtime prediction service and training pipeline"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{ name = "ML Zoomcamp" }]
+
+dependencies = [
+  "fastapi==0.111.0",
+  "uvicorn==0.30.1",
+  "scikit-learn==1.4.2",
+  "pandas==2.2.2",
+  "numpy==1.26.4",
+  "joblib==1.4.2",
+  "requests==2.32.3",
+  "pytest==8.2.2",
+  "httpx==0.27.0",
+]
+
+[project.optional-dependencies]
+xgboost = ["xgboost>=2.0.3"]
+
+[build-system]
+requires = ["setuptools>=69.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*", "service*"]

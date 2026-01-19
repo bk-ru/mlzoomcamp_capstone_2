@@ -1,0 +1,30 @@
+{
+  "seed": 42,
+  "feature_cols": [
+    "fiscal_year",
+    "agency_name",
+    "title_description",
+    "work_location_borough",
+    "leave_status_as_of_june_30",
+    "pay_basis",
+    "base_salary"
+  ],
+  "best_model_name": "log_reg_test",
+  "threshold": 0.5,
+  "metrics": {
+    "val": {
+      "f1": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "accuracy": 1.0
+    },
+    "test": {
+      "f1": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "accuracy": 1.0
+    }
+  },
+  "data_source": "synthetic",
+  "split_type": "synthetic"
+}
